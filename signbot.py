@@ -52,6 +52,7 @@ class SignBot(object):
         self.username, self.password = username, password
         self.out, self.fmt, self.caps = out, fmt, caps
         self.start, self.actions = time.time(), 0
+        self.cache = {}
 
     def go(self):
         """
@@ -153,13 +154,13 @@ class SignBot(object):
         d = DeleteMessagesRequest(self.__session, [mid])
         d.doRequest()
 
-    def __sign(self, pname, pid, cache={}):
+    def __sign(self, pname, pid):
         # "KICK ME" signs persist until rollover; SignBot does not persist
         # across rollovers.
         # If we've ever seen a player tagged, we know he'll always be tagged
         # by the same person while we exist, so we can just save that in a
         # cache.
-        if pname not in cache:
+        if pname not in self.cache:
             # Fetch user's profile page
             r = GenericRequest(self.__session)
             r.url = 'http://www.kingdomofloathing.com/showplayer.php?who={}'.format(pid)
@@ -172,14 +173,14 @@ class SignBot(object):
                           r'images/kickme.png" height="100" width="60" />',
                           r.responseText)
             if r is not None:
-                cache[pname] = r.group(1)
+                self.cache[pname] = r.group(1)
         else:
             self.log("Cache hit: {} (#{})".format(pname, pid))
 
-        if pname not in cache:
+        if pname not in self.cache:
             resp = "You're clean."
         else:
-            resp = "{} tagged you!".format(cache[pname])
+            resp = "{} tagged you!".format(self.cache[pname])
         self.__chat_say(pname, pid, resp)
         self.actions += 1
 
