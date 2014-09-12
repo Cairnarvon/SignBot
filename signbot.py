@@ -136,10 +136,6 @@ class SignBot(object):
                     yield kmail
                     limit -= 1
 
-        # This is unexpected enough to crash the bot
-        if pname and not len(r.responseData['kmails']):
-            raise Exception("Couldn't find a kmail by {}!".format(pname))
-
     def __handle_kmail(self, kmail):
         if kmail['text']:
             self.log('They said: "{}"'.format(kmail['text']))
@@ -153,10 +149,10 @@ class SignBot(object):
                 item['name'] if item['quantity'] == 1 else item['plural']))
             if item['id'] == 7698 and self.caps['spider']:
                 # Rubber spider
-                self.__use_spider(msg['userName'], msg['userId'])
+                self.__use_spider(kmail['userName'], kmail['userId'])
             elif item['id'] == 4939 and self.caps['arrow']:
                 # Time's arrow
-                self.__use_arrow(msg['userName'], msg['userId'])
+                self.__use_arrow(kmail['userName'], kmail['userId'])
 
         # Don't keep it
         self.__del_kmail(kmail['id'])
