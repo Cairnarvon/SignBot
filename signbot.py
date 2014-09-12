@@ -63,6 +63,10 @@ class SignBot(object):
         self.__session.login(self.username, self.password)
         self.__chat = ChatManager(self.__session)
 
+        # Check pending kmails
+        for kmail in self.__get_kmails():
+            self.__handle_kmail(kmail)
+
         while True:
             for msg in self.__fetch_chat_messages():
                 if msg['type'] == 'private' and self.caps.get('sign', False):
@@ -77,27 +81,8 @@ class SignBot(object):
                              'a green message.'.format(**msg))
 
                     # Fetch it and examine it
-                    kmail = self.__get_kmail(msg['userName'])
-                    if kmail['text']:
-                        self.log('They said: "{}"'.format(kmail['text']))
-                    if kmail['meat'] > 0:
-                        self.log('They sent {} meat.'.format(kmail['meat']))
-
-                    # Look at the items they sent
-                    for item in kmail['items']:
-                        self.log('They sent {} {}.'.format(
-                            item['quantity'],
-                            item['name'] if item['quantity'] == 1
-                            else item['plural']))
-                        if item['id'] == 7698 and self.caps.get('spider', False):
-                            # Rubber spider
-                            self.__use_spider(msg['userName'], msg['userId'])
-                        elif item['id'] == 4939 and self.caps.get('arrow', False):
-                            # Time's arrow
-                            self.__use_arrow(msg['userName'], msg['userId'])
-
-                    # Don't keep it
-                    self.__del_kmail(kmail['id'])
+                    for kmail in self.__get_kmails(msg['userName'], 1):
+                        self.__handle_kmail(kmail)
             time.sleep(1)
 
     def __del__(self):
@@ -136,19 +121,43 @@ class SignBot(object):
         self.__chat.sendChatMessage('/msg {} {}'.format(pid, text))
         self.log('I told {} (#{}) "{}"'.format(pname, pid, text))
 
-    def __get_kmail(self, pname):
+    def __get_kmails(self, pname=None, limit=None):
         # Fetch all of our green messages
         r = GetMessagesRequest(self.__session, oldestFirst=True)
         r.doRequest()
         r.parseResponse()
 
-        # Return the most recent one sent by pname
+        # Yield an apprioprate amount, LIFO
         for kmail in r.responseData['kmails']:
-            if kmail['userName'] == pname:
-                return kmail
+            while limit is None or limit > 0:
+                if pname is None or kmail['userName'] == pname:
+                    yield kmail
+                    limit -= 1
 
         # This is unexpected enough to crash the bot
-        raise Exception("Couldn't find a kmail by {}!".format(pname))
+        if pname and not len(r.responseData['kmails']):
+            raise Exception("Couldn't find a kmail by {}!".format(pname))
+
+    def __handle_kmail(self, kmail):
+        if kmail['text']:
+            self.log('They said: "{}"'.format(kmail['text']))
+        if kmail['meat'] > 0:
+            self.log('They sent {} meat.'.format(kmail['meat']))
+
+        # Look at the items they sent
+        for item in kmail['items']:
+            self.log('They sent {} {}.'.format(
+                item['quantity'],
+                item['name'] if item['quantity'] == 1 else item['plural']))
+            if item['id'] == 7698 and self.caps.get('spider', False):
+                # Rubber spider
+                self.__use_spider(msg['userName'], msg['userId'])
+            elif item['id'] == 4939 and self.caps.get('arrow', False):
+                # Time's arrow
+                self.__use_arrow(msg['userName'], msg['userId'])
+
+        # Don't keep it
+        self.__del_kmail(kmail['id'])
 
     def __del_kmail(self, mid):
         d = DeleteMessagesRequest(self.__session, [mid])
