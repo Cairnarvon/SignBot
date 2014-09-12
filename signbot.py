@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import collections
 import re
 import signal
 import sys
@@ -50,7 +51,8 @@ class SignBot(object):
         Once the bot object is constructed, run it with go().
         """
         self.username, self.password = username, password
-        self.out, self.fmt, self.caps = out, fmt, caps
+        self.out, self.fmt = out, fmt
+        self.caps = collections.defaultdict(lambda: False, caps)
         self.start, self.actions = time.time(), 0
         self.cache = {}
 
@@ -69,7 +71,7 @@ class SignBot(object):
 
         while True:
             for msg in self.__fetch_chat_messages():
-                if msg['type'] == 'private' and self.caps.get('sign', False):
+                if msg['type'] == 'private' and self.caps['sign']:
                     # Got a blue message! Report "KICK ME" sign status
                     self.log('{userName} (#{userId}) sent me '
                              'a blue message: "{text}"'.format(**msg))
@@ -149,10 +151,10 @@ class SignBot(object):
             self.log('They sent {} {}.'.format(
                 item['quantity'],
                 item['name'] if item['quantity'] == 1 else item['plural']))
-            if item['id'] == 7698 and self.caps.get('spider', False):
+            if item['id'] == 7698 and self.caps['spider']:
                 # Rubber spider
                 self.__use_spider(msg['userName'], msg['userId'])
-            elif item['id'] == 4939 and self.caps.get('arrow', False):
+            elif item['id'] == 4939 and self.caps['arrow']:
                 # Time's arrow
                 self.__use_arrow(msg['userName'], msg['userId'])
 
