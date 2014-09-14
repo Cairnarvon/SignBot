@@ -131,9 +131,11 @@ class SignBot(object):
 
         # Yield an apprioprate amount, LIFO
         for kmail in r.responseData['kmails']:
-            while limit is None or limit > 0:
-                if pname is None or kmail['userName'] == pname:
-                    yield kmail
+            if limit is not None and limit <= 0:
+                break
+            if pname is None or kmail['userName'] == pname:
+                yield kmail
+                if limit is not None:
                     limit -= 1
 
     def __handle_kmail(self, kmail):
