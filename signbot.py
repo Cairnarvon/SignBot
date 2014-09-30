@@ -60,16 +60,23 @@ class SignBot(object):
         """
         Actually run the bot.
         """
+        global active
+
         self.log('Logging in.')
         self.__session = Session()
         self.__session.login(self.username, self.password)
         self.__chat = ChatManager(self.__session)
+        active = time.time()
 
         # Check pending kmails
         for kmail in self.__get_kmails():
             self.__handle_kmail(kmail)
 
         while True:
+            if time.time() - active > 3600:
+                # Chat occasionally dies quietly. Maybe that happened.
+                raise Exception("Inactive for too long.")
+
             for msg in self.__fetch_chat_messages():
                 if msg['type'] == 'private' and self.caps['sign']:
                     # Got a blue message! Report "KICK ME" sign status
@@ -85,6 +92,7 @@ class SignBot(object):
                     # Fetch it and examine it
                     for kmail in self.__get_kmails(msg['userName'], 1):
                         self.__handle_kmail(kmail)
+                active = time.time()
             time.sleep(1)
 
     def __del__(self):
@@ -234,8 +242,9 @@ if __name__ == '__main__':
     while True:
         try:
             SignBot(_username, _password).go()
-        except (ConnectionError, Error) as e:
+        except (ConnectionError, Error, Exception) as e:
             print '{} -- Dead: {}'.format(time.strftime('%Y-%m-%d %H:%M:%S'),
                                           str(e))
-            # Sleep for 10 minutes for rollover, 10 seconds otherwise
-            time.sleep(600 if isinstance(e, Error) else 10)
+            if isinstance(e, Error):
+                # Sleep until (probably) rollover ends
+                time.sleep(600)
