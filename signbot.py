@@ -15,6 +15,7 @@ from kol.request.GenericRequest import GenericRequest
 from kol.request.GetMessagesRequest import GetMessagesRequest
 from kol.request.DeleteMessagesRequest import DeleteMessagesRequest
 from kol.request.CursePlayerRequest import CursePlayerRequest
+from kol.request.SendMessageRequest import SendMessageRequest
 
 # Config
 _username = 'SignBot/q'
@@ -171,6 +172,18 @@ class SignBot(object):
         d = DeleteMessagesRequest(self.__session, [mid])
         d.doRequest()
 
+    def __send_kmail(self, pname, pid, message, item=None):
+        msg = {'userId': pid, 'text': message}
+        if item:
+            msg['items'] = [{'id': item, 'quantity': 1}]
+        r = SendMessageRequest(self.__session, msg)
+        r.doRequest()
+        self.log('I sent a kmail to {} (#{}): "{}"'.format(pname, pid, message))
+        if item:
+            self.log('I sent them an item: {}'.format(
+                {4939: "time's arrow",
+                 7698: "rubber spider"}.get(item, "item #{}".format(item))))
+
     def __sign(self, pname, pid):
         # "KICK ME" signs persist until rollover; SignBot does not persist
         # across rollovers.
@@ -209,7 +222,17 @@ class SignBot(object):
         except Exception as e:
             # Something went wrong! Maybe they're in HC or ronin
             self.log("I couldn't use an arrow on them: {}".format(str(e)))
-            self.__chat_say(pname, pid, "I couldn't use that arrow on you.")
+            try:
+                self.__send_kmail(pname, pid,
+                                  "I couldn't use that arrow on you, "
+                                  "so I'm returning it.",
+                                  4939)
+            except Error as e2:
+                self.log("I couldn't return their arrow: {}".format(str(e2)))
+                self.__chat_say(pname, pid,
+                                "I couldn't use that arrow on you and "
+                                "something went wrong when I tried to "
+                                "return it. Sorry!")
         else:
             # Success! No need to tell them, they'll be notified
             self.log("I used an arrow on {} (#{})".format(pname, pid))
@@ -224,7 +247,18 @@ class SignBot(object):
             # Something went wrong! Maybe they're in HC or ronin
             self.log("I couldn't use a spider on {} (#{}): {}".format(
                 pname, pid, str(e)))
-            self.__chat_say(pname, pid, "I couldn't use that spider on you.")
+            try:
+                self.__send_kmail(pname, pid,
+                                  "I couldn't use that spider on you, "
+                                  "so I'm returning it.",
+                                  7698)
+            except Error as e2:
+                print "Error return"
+                self.log("I couldn't return their spider: {}".format(str(e2)))
+                self.__chat_say(pname, pid,
+                                "I couldn't use that spider on you and "
+                                "something went wrong when I tried to "
+                                "return it. Sorry!")
         else:
             # Success! Tell them they can expect their spider
             self.log("I used a spider on {} (#{}).".format(pname, pid))
