@@ -25,6 +25,7 @@ _password = ''
 reload(sys)
 sys.setdefaultencoding('utf8')
 
+bookkeeping = {}
 
 class SignBot(object):
     def __init__(self,
@@ -54,7 +55,8 @@ class SignBot(object):
         self.username, self.password = username, password
         self.out, self.fmt = out, fmt
         self.caps = collections.defaultdict(lambda: False, caps)
-        self.start, self.actions = time.time(), 0
+        self.start = time.time()
+        bookkeeping[id(self)] = [time.time(), 0]
         self.cache = {}
 
     def go(self):
@@ -98,7 +100,8 @@ class SignBot(object):
 
     def __del__(self):
         # Convert running time to a human-readable format
-        hours, t = divmod(time.time() - self.start, 3600)
+        start, actions = bookkeeping[id(self)]
+        hours, t = divmod(time.time() - start, 3600)
         minutes, seconds = divmod(t, 60)
         duration = []
         if hours:
@@ -114,7 +117,8 @@ class SignBot(object):
 
         # Last words
         self.log("I existed for {}, helped {} {}, and now I am dead.".format(
-            duration, self.actions, 'people' if self.actions != 1 else 'person'))
+            duration, actions, 'people' if actions != 1 else 'person'))
+        del bookkeeping[id(self)]
 
     def __fetch_chat_messages(self, retry=0):
         try:
@@ -212,7 +216,7 @@ class SignBot(object):
         else:
             resp = "{} tagged you!".format(self.cache[pname])
         self.__chat_say(pname, pid, resp)
-        self.actions += 1
+        bookkeeping[id(self)][1] += 1
 
     def __use_arrow(self, pname, pid):
         try:
@@ -236,7 +240,7 @@ class SignBot(object):
         else:
             # Success! No need to tell them, they'll be notified
             self.log("I used an arrow on {} (#{})".format(pname, pid))
-        self.actions += 1
+        bookkeeping[id(self)][1] += 1
 
     def __use_spider(self, pname, pid):
         try:
@@ -263,7 +267,7 @@ class SignBot(object):
             # Success! Tell them they can expect their spider
             self.log("I used a spider on {} (#{}).".format(pname, pid))
             self.__chat_say(pname, pid, "I used that spider on you.")
-        self.actions += 1
+        bookkeeping[id(self)][1] += 1
 
     def log(self, text):
         """
