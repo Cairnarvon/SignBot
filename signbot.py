@@ -30,7 +30,7 @@ bookkeeping = {}
 class SignBot(object):
     def __init__(self,
                  username, password, out=sys.stdout, fmt='%Y-%m-%d %H:%M:%S',
-                 caps={'sign': True, 'spider': True, 'arrow': True}):
+                 caps={'sign': True, 'spider': True, 'arrow': True, 'fun': True}):
         """
         username, password
             The KoL login credentials of your bot account.
@@ -168,6 +168,9 @@ class SignBot(object):
             elif item['id'] == 4939 and self.caps['arrow']:
                 # Time's arrow
                 self.__use_arrow(kmail['userName'], kmail['userId'])
+            elif item['id'] == 4811 and self.caps['fun']:
+                # Holiday Fun!
+                self.__send_holiday_fun(kmail['userName'], kmail['userId'])
 
         # Don't keep it
         self.__del_kmail(kmail['id'])
@@ -186,7 +189,8 @@ class SignBot(object):
         if item:
             self.log('I sent them an item: {}'.format(
                 {4939: "time's arrow",
-                 7698: "rubber spider"}.get(item, "item #{}".format(item))))
+                 7698: "rubber spider",
+                 4811: "Holiday Fun!"}.get(item, "item #{}".format(item))))
 
     def __sign(self, pname, pid):
         # "KICK ME" signs persist until rollover; SignBot does not persist
@@ -268,6 +272,32 @@ class SignBot(object):
             self.log("I used a spider on {} (#{}).".format(pname, pid))
             self.__chat_say(pname, pid, "I used that spider on you.")
         bookkeeping[id(self)][1] += 1
+
+    def __send_holiday_fun(self, pname, pid):
+        url = "http://www.kingdomofloathing.com/town_sendgift.php"
+        data = {'whichpackage': 1,
+                'towho': pid,
+                'note': 'Your Holiday Fun!, courtesy of SignBot Industries.',
+                'insidenote': 'Have a day.',
+                'whichitem1': 4811,
+                'howmany1': 1,
+                'fromwhere': 0,
+                'action': 'Yep.',
+                'pwd': self.__session.pwd}
+        resp = self.__session.opener.open(url, data)
+        m = re.search(r'<table  width=95%  cellspacing=0 cellpadding=0><tr>'
+                      r'<td style="color: white;" align=center bgcolor=blue'
+                      r'><b>Results:</b></td></tr><tr><td style="padding: 5'
+                      r'px; border: 1px solid blue;"><center><table><tr><td'
+                      r'>(.*?)</td></tr></table>', resp.text)
+        if m is not None and m.group(1) == 'Package sent.':
+            self.log('I successfully sent {} (#{}) a plain brown wrapper '
+                     'containing some Holiday Fun!'.format(pname, pid))
+        else:
+            err = m.group(1) if m is not None else 'Unspecified error.'
+            self.__send_kmail(pname, pid,
+                "I couldn't send you a gift package because of the "
+                "following problem: {}".format(err), 4811)
 
     def log(self, text):
         """
