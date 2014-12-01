@@ -259,8 +259,8 @@ class SignBot(object):
                 pname, pid, str(e)))
             try:
                 self.__send_kmail(pname, pid,
-                                  "I couldn't use that spider on you, "
-                                  "so I'm returning it.",
+                                  "You already have a rubber spider on you, "
+                                  "so I'm returning this one.",
                                   7698)
             except Error as e2:
                 print "Error return"
