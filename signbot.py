@@ -47,8 +47,9 @@ class SignBot(object):
             By default, the bot responds to blue messages by reporting
             "KICK ME" sign status, and to green messages by using rubber
             spiders and time's arrows contained therein.
-            Set caps['sign'], caps['spider'], and/or caps['arrow'] to False
-            (or omit them) to disable specific behaviours.
+            Set caps['sign'], caps['spider'], caps['arrow'], and/or
+            caps['fun'] to False (or omit them) to disable specific
+            behaviours.
 
         Once the bot object is constructed, run it with go().
         """
@@ -170,7 +171,8 @@ class SignBot(object):
                 self.__use_arrow(kmail['userName'], kmail['userId'])
             elif item['id'] == 4811 and self.caps['fun']:
                 # Holiday Fun!
-                self.__send_holiday_fun(kmail['userName'], kmail['userId'])
+                for _ in range(item['quantity']):
+                    self.__send_holiday_fun(kmail['userName'], kmail['userId'])
 
         # Don't keep it
         self.__del_kmail(kmail['id'])
