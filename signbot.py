@@ -318,3 +318,5 @@ if __name__ == '__main__':
             if isinstance(e, Error):
                 # Sleep until (probably) rollover ends
                 time.sleep(600)
+            else:
+                time.sleep(5)
