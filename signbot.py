@@ -202,16 +202,15 @@ class SignBot(object):
         # cache.
         if pname not in self.cache:
             # Fetch user's profile page
-            r = GenericRequest(self.__session)
-            r.url = 'http://www.kingdomofloathing.com/showplayer.php?who={}'.format(pid)
-            r.doRequest()
+            url = 'http://www.kingdomofloathing.com/showplayer.php?who={}'.format(pid)
+            profile = self.__session.opener.open(url, {}).text
 
             # Check for the sign
             r = re.search(r'<img alt="Placed by [^"]+" title="Placed by ([^"]'
                           r'+)" style="position: absolute; left: 0px; top: 0p'
                           r'x" src="http://images.kingdomofloathing.com/other'
                           r'images/kickme.png" height="100" width="60" />',
-                          r.responseText)
+                          profile)
             if r is not None:
                 self.cache[pname] = r.group(1)
         else:
