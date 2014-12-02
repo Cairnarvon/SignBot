@@ -1,11 +1,14 @@
 #!/usr/bin/python
 
 import collections
+import random
 import re
 import signal
 import sys
 import time
+from HTMLParser import HTMLParser
 
+import feedparser
 from requests.exceptions import ConnectionError
 
 from kol.Session import Session
@@ -30,7 +33,8 @@ bookkeeping = {}
 class SignBot(object):
     def __init__(self,
                  username, password, out=sys.stdout, fmt='%Y-%m-%d %H:%M:%S',
-                 caps={'sign': True, 'spider': True, 'arrow': True, 'fun': True}):
+                 caps={'sign': True, 'spider': True, 'arrow': True,
+                       'fun': True, 'tweet': 'dril'}):
         """
         username, password
             The KoL login credentials of your bot account.
@@ -50,6 +54,7 @@ class SignBot(object):
             Set caps['sign'], caps['spider'], caps['arrow'], and/or
             caps['fun'] to False (or omit them) to disable specific
             behaviours.
+            caps['tweet'] must be a valid Twitter username or False.
 
         Once the bot object is constructed, run it with go().
         """
@@ -157,6 +162,9 @@ class SignBot(object):
             self.log('They said: "{}"'.format(kmail['text']))
         if kmail['meat'] > 0:
             self.log('They sent {} meat.'.format(kmail['meat']))
+            if self.caps['tweet']:
+                self.__send_kmail(kmail['userName'], kmail['userId'],
+                                  tweet(self.caps['tweet']))
 
         # Look at the items they sent
         for item in kmail['items']:
@@ -305,6 +313,17 @@ class SignBot(object):
         Output time-stamped text to self.out.
         """
         self.out.write('{} -- {}\n'.format(time.strftime(self.fmt), text))
+
+
+def tweet(who):
+    """Return a random recent tweet by the given user."""
+    g = globals()
+    if 'tweets' not in g or g['tweetupdate'] < time.time():
+        f = feedparser.parse('http://twitrss.me/twitter_user_to_rss/?user=' + who)
+        g['tweets'] = [e['summary'] for e in f['entries']]
+        g['tweetupdate'] = time.time() + 3600
+    return HTMLParser().unescape(random.choice(g['tweets'])).encode('latin1',
+                                                                    'replace')
 
 
 if __name__ == '__main__':
