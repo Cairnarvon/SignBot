@@ -270,7 +270,6 @@ class SignBot(object):
                                   "so I'm returning this one.",
                                   7698)
             except Error as e2:
-                print "Error return"
                 self.log("I couldn't return their spider: {}".format(str(e2)))
                 self.__chat_say(pname, pid,
                                 "I couldn't use that spider on you and "
@@ -313,6 +312,7 @@ class SignBot(object):
         Output time-stamped text to self.out.
         """
         self.out.write('{} -- {}\n'.format(time.strftime(self.fmt), text))
+        self.out.flush()
 
 
 def tweet(who):
@@ -333,6 +333,7 @@ if __name__ == '__main__':
         except (ConnectionError, Error, Exception) as e:
             print '{} -- Dead: {}'.format(time.strftime('%Y-%m-%d %H:%M:%S'),
                                           str(e))
+            sys.stdout.flush()
             if isinstance(e, Error):
                 # Sleep until (probably) rollover ends
                 time.sleep(600)
