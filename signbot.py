@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# coding=utf8
 
 import collections
 import random
@@ -19,6 +20,8 @@ from kol.request.GetMessagesRequest import GetMessagesRequest
 from kol.request.DeleteMessagesRequest import DeleteMessagesRequest
 from kol.request.CursePlayerRequest import CursePlayerRequest
 from kol.request.SendMessageRequest import SendMessageRequest
+from kol.request.UneffectRequest import UneffectRequest
+from kol.request.UseItemRequest import UseItemRequest
 
 # Config
 _username = 'SignBot/q'
@@ -28,13 +31,129 @@ _password = ''
 reload(sys)
 sys.setdefaultencoding('utf8')
 
+avatar_potions = {  # potion_id: effect_id
+    5841: 1098,     # A muse-bouche
+    5860: 1117,     # Agent Corrigan's cigarette
+    7633: 1697,     # alien hologram projector
+    7604: 1668,     # artisanal hand-squeezed wheatgrass juice
+    6245: 1184,     # ASCII fu manchu
+    5848: 1105,     # Bangyomaman battle juice
+    7631: 1695,     # black friar's tonsure
+    7630: 1694,     # black magic powder
+    5814: 1075,     # blob of acid
+    7626: 1690,     # blue oyster badge
+    5859: 1116,     # booby trap
+    5854: 1111,     # BRICKO stud
+    5833: 1090,     # brigand brittle
+    7613: 1677,     # bubblin' chemistry solution
+    5820: 1077,     # bull blubber
+    7622: 1686,     # button rouge
+    6241: 1180,     # censored can label
+    5800: 1057,     # Charity's choker
+    6247: 1186,     # cheap clip-on ninja tie
+    5824: 1081,     # clove-flavored lip balm
+    5845: 1102,     # compressed air canister
+    6239: 1178,     # cube of ectoplasm
+    7628: 1692,     # dancing fan
+    6246: 1185,     # demonic surgical gloves
+    7610: 1674,     # Dweebisol™ inhaler
+    6242: 1181,     # ectoplasm au jus
+    5799: 1056,     # eldritch dough
+    7619: 1683,     # electric copperhead potion
+    5836: 1093,     # embezzler's oil
+    5795: 1052,     # Enchanted Flyswatter
+    5806: 1063,     # enchanted muesli
+    5794: 1051,     # Enchanted Plunger
+    5555: 1144,     # fireclutch
+    7602: 1666,     # Fitspiration™ poster
+    7625: 1689,     # flask of rainwater
+    5815: 1072,     # flayed mind
+    5817: 1074,     # forest spirit rattle
+    5821: 1078,     # frog lip-print
+    5837: 1094,     # Fu Manchu Wax
+    6248: 1187,     # gamer slurry
+    5822: 1079,     # gazely stare
+    5796: 1053,     # Gearhead Goo
+    5805: 1062,     # giant breath mint
+    7603: 1667,     # giant neckbeard
+    5811: 1068,     # giant tube of black lipstick
+    5828: 1085,     # gilt perfume bottle
+    5808: 1065,     # glass of gnat milk
+    5807: 1064,     # glass of warm milk
+    5798: 1055,     # Gnollish Crossdress
+    5842: 1099,     # gold toothbrush
+    5861: 1118,     # good ash
+    7632: 1696,     # government-issue identification badge
+    5857: 1114,     # grey cube
+    5849: 1106,     # handyman "hand soap"
+    7600: 1226,     # haunted flame
+    5834: 1091,     # holistic headache remedy
+    5838: 1095,     # Iiti Kitty Gumdrop
+    6240: 1179,     # Illuminati earpiece
+    5829: 1086,     # janglin' bones
+    5809: 1066,     # Knob Goblin Mutagen
+    5816: 1073,     # kobold kibble
+    7611: 1675,     # Lewd Lemmy Hair Oil
+    6244: 1183,     # lucky cat's paw
+    7624: 1688,     # lynyrd skinner toothblack
+    5797: 1054,     # Missing Eye Simulation Device
+    7621: 1685,     # ninja eyeblack
+    7620: 1684,     # ninja fear powder
+    5852: 1109,     # oil-filled donut
+    5855: 1112,     # Osk'r Chow
+    7629: 1693,     # page of the Necrohobocon
+    5802: 1059,     # perpendicular guano
+    5843: 1100,     # pirate cream pie
+    7627: 1691,     # plastic Jefferson wings
+    7605: 1669,     # punk patch
+    7615: 1679,     # pygmy adder oil
+    5831: 1088,     # pygmy dart
+    5830: 1087,     # pygmy papers
+    7616: 1680,     # pygmy witchhazel
+    5839: 1096,     # ravenous eye
+    7623: 1687,     # Red Army camouflage kit
+    7609: 1673,     # Redeye™ Eyedrops
+    5840: 1097,     # Rogue Windmill Rouge
+    5846: 1103,     # salt water taffy
+    5835: 1092,     # scrunchie tourniquet
+    5856: 1113,     # Scuba Snack
+    5832: 1089,     # secret mummy herbs and spices
+    5804: 1061,     # Shivering Chèvre
+    7617: 1681,     # short deposition
+    5812: 1069,     # skelelton spine
+    5827: 1084,     # skeletal banana
+    5825: 1082,     # Skullery Maid's Knee
+    5801: 1058,     # Smart Bone Dust
+    5813: 1070,     # smut orc sunglasses
+    5850: 1107,     # space marine flash grenade
+    5819: 1076,     # spooky gravy fairy warlock hat
+    7606: 1670,     # steampunk potion
+    5853: 1110,     # stick-on gnome beard
+    5818: 1075,     # Stone Golem pebbles
+    7618: 1682,     # straw pole
+    5810: 1067,     # Tears of the Quiet Healer
+    5851: 1108,     # temporary tribal tattoo
+    7601: 1665,     # temporary yak tattoo
+    6243: 1182,     # the kindest cold cut
+    5823: 1080,     # tiny canopic jar
+    7612: 1676,     # tomato soup poster
+    7608: 1672,     # turtle mud
+    5844: 1101,     # una poca de gracia
+    5847: 1104,     # unholy water
+    7607: 1671,     # vial of swamp vapors
+    7614: 1678,     # voodoo glowskull
+    5858: 1115,     # votive candle
+    5803: 1060,     # White Chocolate Golem Seeds
+    5826: 1083,     # zombie hollandaise
+}
+
 bookkeeping = {}
 
 class SignBot(object):
     def __init__(self,
                  username, password, out=sys.stdout, fmt='%Y-%m-%d %H:%M:%S',
                  caps={'sign': True, 'spider': True, 'arrow': True,
-                       'fun': True, 'tweet': 'dril'}):
+                       'fun': True, 'tweet': 'dril', 'avatar': True}):
         """
         username, password
             The KoL login credentials of your bot account.
@@ -51,8 +170,8 @@ class SignBot(object):
             By default, the bot responds to blue messages by reporting
             "KICK ME" sign status, and to green messages by using rubber
             spiders and time's arrows contained therein.
-            Set caps['sign'], caps['spider'], caps['arrow'], and/or
-            caps['fun'] to False (or omit them) to disable specific
+            Set caps['sign'], caps['spider'], caps['arrow'], caps['fun'],
+            caps['avatar'] to False (or omit them) to disable specific
             behaviours.
             caps['tweet'] must be a valid Twitter username or False.
 
@@ -181,6 +300,9 @@ class SignBot(object):
                 # Holiday Fun!
                 for _ in range(item['quantity']):
                     self.__send_holiday_fun(kmail['userName'], kmail['userId'])
+            elif item['id'] in avatar_potions and self.caps['avatar']:
+                self.__change_avatar(item['id'],
+                                     kmail['userName'], kmail['userId'])
 
         # Don't keep it
         self.__del_kmail(kmail['id'])
@@ -306,6 +428,34 @@ class SignBot(object):
             self.__send_kmail(pname, pid,
                 "I couldn't send you a gift package because of the "
                 "following problem: {}".format(err), 4811)
+
+    def __change_avatar(self, potion, pname, pid):
+        try:
+            # Find the IDs of the hard-shruggable effects we're under
+            url = 'http://www.kingdomofloathing.com/charpane.php'
+            pane = self.__session.opener.open(url, {}).text
+            effects = [int(e) for e in re.findall('return hardshrug\((\d+),',
+                                                  pane)]
+
+            # Uneffect all active avatar potions
+            for effect in avatar_potions.values():
+                if effect in effects:
+                    UneffectRequest(self.__session, effect).doRequest()
+                    self.log("Uneffected ID #{}.".format(effect))
+
+            # Use the new one and inform the person
+            UseItemRequest(self.__session, potion).doRequest()
+            self.log("Used avatar potion #{}.".format(potion))
+            self.__chat_say(pname, pid, "Look at me!")
+        except Error:
+            try:
+                self.__send_kmail(pname, pid,
+                    "I couldn't use that avatar potion so I'm returning it.",
+                    potion)
+            except:
+                self.__chat_say(pname, pid,
+                    "I couldn't use that avatar potion and I couldn't return "
+                    "it to you. Sorry.")
 
     def log(self, text):
         """
