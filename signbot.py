@@ -12,6 +12,7 @@ from HTMLParser import HTMLParser
 import feedparser
 from requests.exceptions import ConnectionError
 
+import kol.Error
 from kol.Session import Session
 from kol.Error import Error
 from kol.manager.ChatManager import ChatManager
@@ -153,7 +154,8 @@ class SignBot(object):
     def __init__(self,
                  username, password, out=sys.stdout, fmt='%Y-%m-%d %H:%M:%S',
                  caps={'sign': True, 'spider': True, 'arrow': True,
-                       'fun': True, 'tweet': 'dril', 'avatar': True}):
+                       'fun': True, 'tweet': 'dril', 'avatar': True,
+                       'wang': True}):
         """
         username, password
             The KoL login credentials of your bot account.
@@ -169,10 +171,12 @@ class SignBot(object):
         caps
             By default, the bot responds to blue messages by reporting
             "KICK ME" sign status, and to green messages by using rubber
-            spiders and time's arrows contained therein.
+            spiders, time's arrows, and avatar potions contained therein,
+            by using a wang on usernames therein, and by responding with
+            tweets (as in Twitter) if sent meat.
             Set caps['sign'], caps['spider'], caps['arrow'], caps['fun'],
-            caps['avatar'] to False (or omit them) to disable specific
-            behaviours.
+            caps['avatar'], caps['wang'] to False (or omit them) to disable
+            specific behaviours.
             caps['tweet'] must be a valid Twitter username or False.
 
         Once the bot object is constructed, run it with go().
@@ -279,6 +283,11 @@ class SignBot(object):
     def __handle_kmail(self, kmail):
         if kmail['text']:
             self.log('They said: "{}"'.format(kmail['text']))
+            if (self.caps['wang'] and
+                kmail['text'] != "Keep the contents of this message "
+                                 "top-sekrit, ultra hush-hush."):
+                self.__use_wang(kmail['userName'], kmail['userId'],
+                                kmail['text'])
         if kmail['meat'] > 0:
             self.log('They sent {} meat.'.format(kmail['meat']))
             if self.caps['tweet']:
@@ -402,6 +411,26 @@ class SignBot(object):
             self.log("I used a spider on {} (#{}).".format(pname, pid))
             self.__chat_say(pname, pid, "I used that spider on you.")
         bookkeeping[id(self)][1] += 1
+
+    def __use_wang(self, pname, pid, target):
+        try:
+            c = CursePlayerRequest(self.__session, target, 625)
+            c.doRequest()
+        except Error as e:
+            if e.code == kol.Error.ITEM_NOT_FOUND:
+                self.__chat_say(pname, pid, "I'm sorry, I'm out of wangs.")
+            elif e.code == kol.Error.USER_NOT_FOUND:
+                self.__chat_say(pname, pid,
+                    "Your kmail contained a message but it wasn't a valid "
+                    "username.")
+            else:
+                self.log("Something went wrong wanging: " + e)
+        else:
+            if target != pname:
+                self.__chat_say(pname, pid,
+                    "Successfully wanged {}.".format(target))
+            else:
+                self.log("Successfully wanged {}.".format(target))
 
     def __send_holiday_fun(self, pname, pid):
         url = "http://www.kingdomofloathing.com/town_sendgift.php"
