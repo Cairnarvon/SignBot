@@ -38,6 +38,8 @@ avatar_potions = {  # potion_id: effect_id
     7633: 1697,     # alien hologram projector
     7604: 1668,     # artisanal hand-squeezed wheatgrass juice
     6245: 1184,     # ASCII fu manchu
+    8330: 1860,     # assassin's cheese knife
+    8309: 1839,     # baggie of regular-sized tardigrades
     5848: 1105,     # Bangyomaman battle juice
     7631: 1695,     # black friar's tonsure
     7630: 1694,     # black magic powder
@@ -65,6 +67,7 @@ avatar_potions = {  # potion_id: effect_id
     5795: 1052,     # Enchanted Flyswatter
     5806: 1063,     # enchanted muesli
     5794: 1051,     # Enchanted Plunger
+    8331: 1861,     # filthy armor
     5555: 1144,     # fireclutch
     7602: 1666,     # Fitspiration™ poster
     7625: 1689,     # flask of rainwater
@@ -85,16 +88,21 @@ avatar_potions = {  # potion_id: effect_id
     5842: 1099,     # gold toothbrush
     5861: 1118,     # good ash
     7632: 1696,     # government-issue identification badge
+    8335: 1865,     # grease trap
     5857: 1114,     # grey cube
     5849: 1106,     # handyman "hand soap"
     7600: 1226,     # haunted flame
     5834: 1091,     # holistic headache remedy
+    8312: 1842,     # hustler shades
+    8328: 1858,     # icy hairspray
     5838: 1095,     # Iiti Kitty Gumdrop
     6240: 1179,     # Illuminati earpiece
     5829: 1086,     # janglin' bones
+    8340: 1870,     # janitor's mop
     5809: 1066,     # Knob Goblin Mutagen
     5816: 1073,     # kobold kibble
     7611: 1675,     # Lewd Lemmy Hair Oil
+    8310: 1840,     # little red .epub file
     6244: 1183,     # lucky cat's paw
     7624: 1688,     # lynyrd skinner toothblack
     5797: 1054,     # Missing Eye Simulation Device
@@ -104,6 +112,7 @@ avatar_potions = {  # potion_id: effect_id
     5855: 1112,     # Osk'r Chow
     7629: 1693,     # page of the Necrohobocon
     5802: 1059,     # perpendicular guano
+    8317: 1847,     # pickpocket protector
     5843: 1100,     # pirate cream pie
     7627: 1691,     # plastic Jefferson wings
     7605: 1669,     # punk patch
@@ -121,10 +130,12 @@ avatar_potions = {  # potion_id: effect_id
     5832: 1089,     # secret mummy herbs and spices
     5804: 1061,     # Shivering Chèvre
     7617: 1681,     # short deposition
+    8318: 1848,     # sinister-looking cat
     5812: 1069,     # skelelton spine
     5827: 1084,     # skeletal banana
     5825: 1082,     # Skullery Maid's Knee
     5801: 1058,     # Smart Bone Dust
+    8329: 1859,     # smellbook
     5813: 1070,     # smut orc sunglasses
     5850: 1107,     # space marine flash grenade
     5819: 1076,     # spooky gravy fairy warlock hat
@@ -144,6 +155,8 @@ avatar_potions = {  # potion_id: effect_id
     7607: 1671,     # vial of swamp vapors
     7614: 1678,     # voodoo glowskull
     5858: 1115,     # votive candle
+    8341: 1871,     # warehouse clerk's glasses
+    8339: 1869,     # warehouse walkie-talkie
     5803: 1060,     # White Chocolate Golem Seeds
     5826: 1083,     # zombie hollandaise
 }
